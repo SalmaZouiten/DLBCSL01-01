@@ -1,0 +1,106 @@
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
+import java.io.StringReader;
+import java.util.regex.*;
+
+public class Main {
+    public static void main(String[] args) {
+        String xmlData = "<people>\n" +
+                "    <person>\n" +
+                "        <first_name>Salma</first_name>\n" +
+                "        <last_name>Zouiten</last_name>\n" +
+                "        <age>20</age>\n" +
+                "        <email>salma.zouiten@iu-study.org</email>\n" +
+                "    </person>\n" +
+                "    <person>\n" +
+                "        <first_name>john9</first_name>\n" +
+                "        <last_name>Doe</last_name>\n" +
+                "        <age>h</age>\n" +
+                "        <email></email>\n" +
+                "    </person>\n" +
+                "    <person>\n" +
+                "        <first_name>Liz</first_name>\n" +
+                "        <last_name>lo4</last_name>\n" +
+                "        <age>22</age>\n" +
+                "        <email></email>\n" +
+                "    </person>\n" +
+                "</people>";
+
+        try {
+            // Create DocumentBuilder
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new InputSource(new StringReader(xmlData)));
+
+            Element root = document.getDocumentElement();
+            // Validate XML data
+            brokenAttributes(root);
+
+            //Used for catching exceptions
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void brokenAttributes(Node node) {
+        // Base case: If the node is null, return
+        if (node == null) {
+            return;
+        }
+        // Used to check wether the node can be checked
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            validateNode((Element) node);
+        }
+        // recursive call for iterating through the nodes
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            brokenAttributes(children.item(i));
+        }
+    }
+
+    // Method to validate XML attributes
+    private static void validateNode(Element node) {
+        // Here we define a regex pattern for the valid characters
+        Pattern agePattern = Pattern.compile("^[0-9]+$");
+        Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+        Pattern namePattern = Pattern.compile("^[A-Za-z]+$");
+
+        String nodeName = node.getNodeName();
+        String nodeValue = node.getTextContent().trim();
+
+        switch (nodeName) {
+            case "first_name":
+            case "last_name":
+
+                if (nodeValue.isEmpty()) {
+                    System.out.println("Invalid: <" + nodeName + "> is empty");
+                } else if (!namePattern.matcher(nodeValue).matches()) {
+                    System.out.println("Error: <" + nodeName + "> " + ": Invalid Name: " + nodeValue);
+                }
+                break;
+
+            case "age":
+                if (nodeValue.isEmpty()) {
+                    System.out.println("Invalid: <" + nodeName + "> is empty");
+                } else if (!agePattern.matcher(nodeValue).matches()) {
+                    System.out.println("Error: <" + nodeName + "> " + ": Invalid Age: " + nodeValue);
+                }
+                break;
+
+            case "email":
+                if (nodeValue.isEmpty()) {
+                    System.out.println("Invalid: <" + nodeName + "> is empty");
+                } else if (!emailPattern.matcher(nodeValue).matches()) {
+                    System.out.println("Error: <" + nodeName + "> " + ": Invalid Email Address: " + nodeValue);
+                }
+                break;
+        }
+    }
+}
+
+
+
+
+
+
+
